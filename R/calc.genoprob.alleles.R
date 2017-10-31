@@ -1,16 +1,16 @@
 ################################################################################
 # Main function for running the haplotype HMM for DO mice.
-# You must supply either a set of founders with your data or a set of 
+# You must supply either a set of founders with your data or a set of
 # founder means and variances.  This means that either is.founder.F1 must have
-# true values for at least one sample from each founder or init.means and 
+# true values for at least one sample from each founder or init.means and
 # init.covars must be populated with state mean and covariance estimates for all
 # SNPs.
 # Arguments: data: list, containing geno, sex and gen.
 #            chr: character vector, with chromosomes to run.  Must match
-#                 the chromosome IDs in the snps table.  
+#                 the chromosome IDs in the snps table.
 #            founders: list, containing genotype calls for the founders
 #                      and F1s.
-#            snps: data.frame, with 4 columns containing SNPs to use. 
+#            snps: data.frame, with 4 columns containing SNPs to use.
 #                  SNP IDs, chr, Mb position, cM position in columns 1:4.
 #            output.dir: character, with the file directory for the final
 #                        theta & rho mean and variance files.
@@ -70,7 +70,7 @@ calc.genoprob.alleles = function(data, chr, founders, snps, output.dir = ".",
       if(length(females) > 0) {
 
         print("Females")
-        cur.data = list(geno = data$geno[females,], 
+        cur.data = list(geno = data$geno[females,],
                    sex = data$sex[females], gen = data$gen[females])
         attributes(cur.data) = attributes(data)
         founder.subset = which(founders$sex == "F")
@@ -79,7 +79,7 @@ calc.genoprob.alleles = function(data, chr, founders, snps, output.dir = ".",
                        code = founders$code[founder.subset],
                        states = founders$states$X$F)
         tmp = hmm.allele(data = cur.data, founders = cur.founders,
-              sex = "F", snps = cur.snps, chr = curr.chr, 
+              sex = "F", snps = cur.snps, chr = curr.chr,
               trans.prob.fxn = trans.prob.fxn)
         female.prsmth = tmp$prsmth
         female.b = tmp$b
@@ -87,7 +87,7 @@ calc.genoprob.alleles = function(data, chr, founders, snps, output.dir = ".",
 
       } # if(length(females) > 0)
 
-      # Run the males, which only have founder states, not F1s because the 
+      # Run the males, which only have founder states, not F1s because the
       # males are hemizygous.
       males = which(data$sex == "M")
       male.prsmth = NULL
@@ -96,9 +96,9 @@ calc.genoprob.alleles = function(data, chr, founders, snps, output.dir = ".",
       # Only run if there are samples that are male.  If only founders are
       # male, there's no point in running this.
       if(length(males) > 0) {
-	  
+
         print("Males")
-        cur.data = list(geno = data$geno[males,], 
+        cur.data = list(geno = data$geno[males,],
                    sex = data$sex[males], gen = data$gen[males])
         attributes(cur.data) = attributes(data)
         founder.subset = which(founders$sex == "M")
@@ -108,20 +108,20 @@ calc.genoprob.alleles = function(data, chr, founders, snps, output.dir = ".",
                        states = founders$states$X$M)
         cur.founders = keep.homozygotes(cur.founders)
         tmp = hmm.allele(data = cur.data, founders = cur.founders,
-              sex = "M", snps = cur.snps, chr = curr.chr, 
+              sex = "M", snps = cur.snps, chr = curr.chr,
               trans.prob.fxn = trans.prob.fxn)
         male.prsmth = tmp$prsmth
         male.b = tmp$b
         rm(tmp)
-		
+
       } # if(length(males) > 0)
 
       # Combine the male and female prsmth data.
       if(length(females) > 0) {
         if(length(males) > 0) {
-          prsmth = array(-.Machine$double.xmax, c(length(founders$states$X$F), 
-                   nrow(data$geno), nrow(cur.snps)), dimnames = 
-                   list(founders$states$X$F, rownames(data$geno), 
+          prsmth = array(-.Machine$double.xmax, c(length(founders$states$X$F),
+                   nrow(data$geno), nrow(cur.snps)), dimnames =
+                   list(founders$states$X$F, rownames(data$geno),
                    cur.snps[,1]))
           m = match(dimnames(female.prsmth)[[2]], dimnames(prsmth)[[2]])
           prsmth[,m,] = female.prsmth
@@ -129,8 +129,8 @@ calc.genoprob.alleles = function(data, chr, founders, snps, output.dir = ".",
           m2 = match(paste0(rownames(male.prsmth), rownames(male.prsmth)),
                rownames(prsmth))
           if(attr(data, "sampletype") == "DOF1") {
-		    m2 = match(paste0(rownames(male.prsmth), "I"), rownames(prsmth))
-		  } # if(attr(data, "sampletype") == "DOF1")
+            m2 = match(paste0(rownames(male.prsmth), "I"), rownames(prsmth))
+          } # if(attr(data, "sampletype") == "DOF1")
           prsmth[m2,m,] = male.prsmth
           rm(female.prsmth, male.prsmth)
         } else {
@@ -139,9 +139,9 @@ calc.genoprob.alleles = function(data, chr, founders, snps, output.dir = ".",
         } # else
       } else if(length(males) > 0) {
 
-        prsmth = array(-.Machine$double.xmax, c(length(founders$states$X$F), 
-                 nrow(data$geno), nrow(cur.snps)), dimnames = 
-                 list(founders$states$X$F, rownames(data$geno), 
+        prsmth = array(-.Machine$double.xmax, c(length(founders$states$X$F),
+                 nrow(data$geno), nrow(cur.snps)), dimnames =
+                 list(founders$states$X$F, rownames(data$geno),
                  cur.snps[,1]))
         m = match(dimnames(male.prsmth)[[2]], dimnames(prsmth)[[2]])
         m2 = match(paste(dimnames(male.prsmth)[[1]], dimnames(male.prsmth)[[1]], sep = ""),
@@ -176,19 +176,19 @@ calc.genoprob.alleles = function(data, chr, founders, snps, output.dir = ".",
       cur.founders = founders
       cur.founders$states = cur.founders$states$auto
 
-      tmp = hmm.allele(data = data, founders = cur.founders, sex = "F", 
+      tmp = hmm.allele(data = data, founders = cur.founders, sex = "F",
             snps = cur.snps, chr = curr.chr, trans.prob.fxn = trans.prob.fxn)
       prsmth = tmp$prob.mats$prsmth
       b = tmp$b
 
-      # Write out the smoothed probabilities and the founder state meand and 
+      # Write out the smoothed probabilities and the founder state meand and
       # variances.
-      write.results(prsmth = tmp$prsmth, b = tmp$b, output.dir = output.dir, 
-	                chr = curr.chr, all.chr = chr)
+      write.results(prsmth = tmp$prsmth, b = tmp$b, output.dir = output.dir,
+                    chr = curr.chr, all.chr = chr)
       rm(tmp)
 
     } # else
     gc()
-	
+
   } # for(chr)
 } # calc.genoprob.alleles()
