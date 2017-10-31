@@ -78,9 +78,17 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
 
       } # if(any(names(data) == "gen"))
 
+        print(data$geno[gen,])
+
+        cat("nrow(b) = ", nrow(b), "\n")
+        g <- data$geno[gen,]
+        if(any(g==2) && !any(g==1))
+            g[g==2] <- 1
+
+        cat("unique geno: ", unique(unlist(g)), "\n")
       res = .C(C_filter_smooth_allele,
                dims = as.integer(c(dim(init.hmm$prsmth[,gen,,drop = FALSE]), nrow(b))),
-               geno = as.integer(data$geno[gen,]),
+               geno = as.integer(g),
                a = as.double(a[[i]]),
                b = as.double(b),
                prsmth = as.double(init.hmm$prsmth[,gen,,drop = FALSE]),
