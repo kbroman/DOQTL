@@ -57,7 +57,8 @@ add.missing.F1s = function(founders, snps, sampletype = c("DO", "CC", "DOF1",
     if(mthd == "allele") {
 
       # Add columns for the new F1s.
-      unique.geno = unique(as.character(apply(founders$geno, 2, unique)))
+      unique.geno = unique(as.character(unlist(lapply(as.data.frame(founders$geno), unique))))
+        print(unique.geno)
 
       stopifnot(all(unique.geno %in% c("A", "C", "G", "T", "H", "N")))
 
