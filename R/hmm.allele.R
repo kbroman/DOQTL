@@ -19,16 +19,24 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
   init.hmm = initialize.hmm(snps = snps[,1], samples = rownames(data$geno),
              states = founders$states)
 
+
   # Get emission probabilities.
   b = emission.probs.allele(founders = founders, chr = chr, snps = snps,
       sex = sex)
+
+    cat("saving emission probs\n")
+    saveRDS(b, "emission_probs.rds")
+    print(founders$states)
+
+    saveRDS(list(data=data, founders=founders), "the_data.rds")
+
 
   # Save the initial emission probabilities as pseudocounts.
   pseudocounts = b
   a = NULL
   if(attr(data, "sampletype") %in% c("DO", "DOF1", "HS", "HSrat")) {
 
-    a = trans.prob.fxn(states = founders$states, snps = snps, chr = chr, 
+    a = trans.prob.fxn(states = founders$states, snps = snps, chr = chr,
         sex = sex, gen = data$gen)
 
   } else {
@@ -37,6 +45,8 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
         sex = "F"))
 
   } # else
+
+    saveRDS(a, "trans_probs.rds")
 
   while(p <= maxIter & logLik - lastLogLik > epsilon) {
 
@@ -70,7 +80,7 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
 
       res = .C(C_filter_smooth_allele,
                dims = as.integer(c(dim(init.hmm$prsmth[,gen,,drop = FALSE]), nrow(b))),
-               geno = as.integer(data$geno[gen,]), 
+               geno = as.integer(data$geno[gen,]),
                a = as.double(a[[i]]),
                b = as.double(b),
                prsmth = as.double(init.hmm$prsmth[,gen,,drop = FALSE]),
@@ -92,11 +102,13 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
 
     # Update the parameters and state means and variances.
     print("Updating Parameters ...")
-    b = parameter.update.alleles(geno = data$geno, b = b, 
+    b = parameter.update.alleles(geno = data$geno, b = b,
         pseudocounts = pseudocounts, prsmth = init.hmm$prsmth)
     p = p + 1
 
   } # while(p < maxIter & logLik - lastLogLik > epsilon
+
+    saveRDS(b, "updated_emission_probs.rds")
 
   print(date())
 
@@ -104,7 +116,9 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
   if(p >= maxIter) {
     print("Maximum iterations reached")
   } # if(p >= maxIter)
-    
+
+    saveRDS(init.hmm$prsmth, "prsmth.rds")
+
   return(list(b = b, prsmth = init.hmm$prsmth))
 
 } # hmm.allele
