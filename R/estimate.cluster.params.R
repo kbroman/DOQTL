@@ -6,7 +6,7 @@ estimate.cluster.params = function(founders, data, chr, clust = c("mclust", "pam
 
   clust = match.arg(clust)
   min.prop = 0.02
- 
+
   # First verify that we have all of the founders and F1s.
   if(!is.na(as.numeric(chr))) {
 
@@ -82,7 +82,7 @@ estimate.cluster.params = function(founders, data, chr, clust = c("mclust", "pam
 
   } # else
 
-  r.t.means = array(0, c(length(founders$states), 2, ncol(founders$rho)), 
+  r.t.means = array(0, c(length(founders$states), 2, ncol(founders$rho)),
               dimnames = list(founders$states, c("theta", "rho"),
               colnames(founders$rho)))
   r.t.covars = array(0, dim(r.t.means), dimnames = dimnames(r.t.means))
@@ -112,7 +112,7 @@ estimate.cluster.params = function(founders, data, chr, clust = c("mclust", "pam
     options(warn = -1)
 
     if(clust == "mclust") {
-      
+
       mc = Mclust(rt, modelNames = "VVI", prior = priorControl())
       options("warn" = old.warn)
 
@@ -126,7 +126,7 @@ estimate.cluster.params = function(founders, data, chr, clust = c("mclust", "pam
       if(mc$G > 1) {
 
         # Assign founders/F1s to the nearest cluster.
-        cl.dist = outer(mc$parameters$mean[1,], founder.means[,s,1], "-")^2 + 
+        cl.dist = outer(mc$parameters$mean[1,], founder.means[,s,1], "-")^2 +
                   outer(mc$parameters$mean[2,], founder.means[,s,2], "-")^2
 
         cls = apply(cl.dist, 2, which.min)
@@ -146,11 +146,11 @@ estimate.cluster.params = function(founders, data, chr, clust = c("mclust", "pam
       # Save the variances.
       r.t.covars[,1,s] = mc$parameters$variance$sigma[1,1,cls]
       r.t.covars[,2,s] = mc$parameters$variance$sigma[2,2,cls]
-    
+
     } else {
 
       mc = pamk(data = rt, krange = 2:9, criterion = "multiasw", usepam = FALSE)
-      
+
       # The temporary classification vector for each state. We will populate
       # this with cluster numbers and then copy the cluster means and variances
       # over.
@@ -162,29 +162,29 @@ estimate.cluster.params = function(founders, data, chr, clust = c("mclust", "pam
       clmeans = sapply(tmp, colMeans, na.rm = TRUE)
       clcov = sapply(tmp, cov, use = "pairwise.complete.obs")
       clcov = array(clcov, c(2, 2, ncol(clcov)))
-      
+
       # If we have one cluster, then every sample is in it.
       if(mc$nc > 1) {
-        
+
         # Assign founders/F1s to the nearest cluster.
-        cl.dist = outer(clmeans[1,], founder.means[,s,1], "-")^2 + 
+        cl.dist = outer(clmeans[1,], founder.means[,s,1], "-")^2 +
                   outer(clmeans[2,], founder.means[,s,2], "-")^2
-        
+
         cls = apply(cl.dist, 2, which.min)
-        
+
         if(attr(data, "sampletype") == "DOF1") {
           # We need this for the DO/F1 code to work. It reduces the genotypes
           # classes down to the only possible ones.
           cls = cls[names(cls) %in% founders$states]
         } # if(attr(data, "sampletype") == "DOF1")
-        
+
       } # else
-      
+
       # Now, with the cls vector populated, fill in the state means.
       r.t.means[,1,s] = clmeans[1,cls]
       r.t.means[,2,s] = clmeans[2,cls]
-      
-      
+
+
       # Save the variances.
       r.t.covars[,1,s] = clcov[1,1,cls]
       r.t.covars[,2,s] = clcov[2,2,cls]
@@ -194,7 +194,7 @@ estimate.cluster.params = function(founders, data, chr, clust = c("mclust", "pam
   } # for(s)
 
   r.t.covars[r.t.covars < 1e-8] = 1e-8
-  
+
   return(list(r.t.means  = r.t.means, r.t.covars = r.t.covars))
 
 } # estimate.cluster.params()
@@ -202,6 +202,9 @@ estimate.cluster.params = function(founders, data, chr, clust = c("mclust", "pam
 
 # Helper function to keep only the homozygote founders.
 keep.homozygotes = function(founders) {
+    print(names(founders))
+    print(founders$sex)
+    print(founders$code)
   code = matrix(unlist(strsplit(founders$code, split = "")), nrow = 2)
   keep = which(code[1,] == code[2,])
   for(i in 1:length(founders)) {
@@ -221,7 +224,7 @@ keep.homozygotes = function(founders) {
 estimate.cluster.params2 = function(founders, data, chr) {
 
   min.prop = 0.02
- 
+
   # First verify that we have all of the founders and F1s.
   if(!is.na(as.numeric(chr))) {
 
@@ -297,7 +300,7 @@ estimate.cluster.params2 = function(founders, data, chr) {
 
   } # else
 
-  x.y.means = array(0, c(length(founders$states), 2, ncol(founders$x)), 
+  x.y.means = array(0, c(length(founders$states), 2, ncol(founders$x)),
               dimnames = list(founders$states, c("x", "y"),
               colnames(founders$x)))
   x.y.covars = array(0, c(nrow(x.y.means), 3, dim(x.y.means)[[3]]),
@@ -347,7 +350,7 @@ estimate.cluster.params2 = function(founders, data, chr) {
     if(pk$nc > 1) {
 
       # Assign founders/F1s to the nearest cluster.
-      cl.dist = outer(clmeans[1,], founder.means[,s,1], "-")^2 + 
+      cl.dist = outer(clmeans[1,], founder.means[,s,1], "-")^2 +
                 outer(clmeans[2,], founder.means[,s,2], "-")^2
 
       cls = apply(cl.dist, 2, which.min)

@@ -13,12 +13,12 @@ convert.allele.calls = function(geno1, geno2) {
   geno = rbind(geno1, geno2)
 
   # Get the number of alleles at each SNP.
-  tbl = apply(geno, 2, unique)
+  tbl = lapply(as.data.frame(geno), unique)
   tbl = lapply(tbl, function(a) { a[a != "H" & a != "N"] })
   tbl = lapply(tbl, sort)
   t2 = unlist(lapply(tbl, paste, collapse = ""))
   t3 = table(t2)
- 
+
   # Create a number genotype matrix.
   g2 = matrix(0, nrow(geno), ncol(geno), dimnames = dimnames(geno))
   # Replace SNPs with a single homozygote with 0.
