@@ -66,6 +66,7 @@ void filter_smooth_allele(int* dims, int* geno, double* a, double* b, double* pr
 	  pr_st_index = st1 + pr_sam_index;
 	  /* Numerator of Eqn. 11 in Churchill, 1989.  */
 	  prpred[pr_st_index] = init[st1];
+      if(geno[sam] >= num_symbols) warning("Invalid geno\n");
       prfilt[pr_st_index] = b[st1 * num_symbols + geno[sam]] + prpred[pr_st_index];
 	  loglik[0] = addlog(loglik[0], prfilt[pr_st_index]);
       /* Create the denominator for Eqn. 11 in Churchill, 1989. */
@@ -111,6 +112,7 @@ void filter_smooth_allele(int* dims, int* geno, double* a, double* b, double* pr
         } /* for(st2) */
 		/* Numerator in Eqn 11 in Churchill, 1989. */
         prfilt[pr_st_index] = b[b_index + st1 * num_symbols + geno[geno_sam_index]] + 
+        if(geno[geno_sam_index] >= num_symbols) warning("Invalid geno\n");
                                 prpred[pr_st_index];
         loglik[0] = addlog(loglik[0], prfilt[pr_st_index]);
         sums = addlog(sums, prfilt[pr_st_index]);
