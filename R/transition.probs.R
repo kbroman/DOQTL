@@ -39,14 +39,12 @@ do.trans.probs = function(states, snps, chr = c(1:19, "X"),
   names(alpha) = c(4, 5, 6, 7, 8, 9, 10, 11, 12)
 
   # Get the unique DO generations.
-    print(gen)
   unique.gen = sort(unique(gen))
   unique.gen = unique.gen[!is.na(unique.gen)]
 
   # Create the return value list.
   retval = as.list(1:length(unique.gen))
   names(retval) = unique.gen
-    print(unique.gen)
 
   # Create an empty list of transition probabilities.
   trans.prob = as.list(unique.gen)

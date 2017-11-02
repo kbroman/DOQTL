@@ -202,9 +202,6 @@ estimate.cluster.params = function(founders, data, chr, clust = c("mclust", "pam
 
 # Helper function to keep only the homozygote founders.
 keep.homozygotes = function(founders) {
-    print(names(founders))
-    print(founders$sex)
-    print(founders$code)
   code = matrix(unlist(strsplit(founders$code, split = "")), nrow = 2)
   keep = which(code[1,] == code[2,])
   for(i in 1:length(founders)) {

@@ -24,13 +24,6 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
   b = emission.probs.allele(founders = founders, chr = chr, snps = snps,
       sex = sex)
 
-    cat("saving emission probs\n")
-    saveRDS(b, "emission_probs.rds")
-    print(founders$states)
-
-    saveRDS(list(data=data, founders=founders), "the_data.rds")
-
-
   # Save the initial emission probabilities as pseudocounts.
   pseudocounts = b
   a = NULL
@@ -45,8 +38,6 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
         sex = "F"))
 
   } # else
-
-    saveRDS(a, "trans_probs.rds")
 
   while(p <= maxIter & logLik - lastLogLik > epsilon) {
 
@@ -78,14 +69,10 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
 
       } # if(any(names(data) == "gen"))
 
-        print(data$geno[gen,])
-
-        cat("nrow(b) = ", nrow(b), "\n")
         g <- data$geno[gen,]
         if(any(g==2) && !any(g==1))
             g[g==2] <- 1
 
-        cat("unique geno: ", unique(unlist(g)), "\n")
       res = .C(C_filter_smooth_allele,
                dims = as.integer(c(dim(init.hmm$prsmth[,gen,,drop = FALSE]), nrow(b))),
                geno = as.integer(g),
@@ -116,16 +103,12 @@ hmm.allele = function(data, founders, sex, snps, chr, trans.prob.fxn) {
 
   } # while(p < maxIter & logLik - lastLogLik > epsilon
 
-    saveRDS(b, "updated_emission_probs.rds")
-
   print(date())
 
   # If we reached the end of the interations.
   if(p >= maxIter) {
     print("Maximum iterations reached")
   } # if(p >= maxIter)
-
-    saveRDS(init.hmm$prsmth, "prsmth.rds")
 
   return(list(b = b, prsmth = init.hmm$prsmth))
 
